@@ -23,11 +23,11 @@ Every folder also keeps its report in `report\` (rebuilt on 5 November from this
 
 - `node_modules\` – dependencies for all folders (found automatically from the folders below it).
 - `.pgdata\` – the private PostgreSQL data (about 1 GB, database `velograd`, 300 stations, 50,000 clients, 400,000 rentals). Exercises 2 to 6 share it. Only one server can use port 54329.
-- `guides\` – the English defense guide for exercises 1 to 6 (`How_to_defend_serverside_PZ1-6_EN.pdf`) and the text of all six task sheets.
+- `guides\` – the English defense guides: `How_to_defend_serverside_PZ1-6_EN.pdf` (all six exercises) and `How_to_defend_serverside_PZ4-6_EN.pdf` (short edition for exercises 4 to 6), and the text of all six task sheets.
 
 ## Notes
 
 - `npm start` in exercise 2 recreates the whole database from scratch. Run `npm start` in exercise 3 afterwards to load the 400,000 rentals again (it loads only when fewer than 100,000 rentals exist).
 - Exercise 3 adds rows to the tables that exercise 2 created, so it needs exercise 2 to have run first (the shared `.pgdata` already has everything).
-- Exercise 4 adds one station on every run and leaves it in the table. Exercises 5 and 6 remove what they add.
+- Exercise 4 adds one station on every run and leaves it in the table. Exercises 5 and 6 remove what they add. Delete the leftover before showing exercises 5 and 6, otherwise they count 301 stations instead of 300: `DELETE FROM station WHERE id > 300;`
 - Checked on 5 November: `tsc` is clean in all six folders and every `npm start` ran without errors (exercise 6 also through `npm run demo` and the real server on port 8080). The six reports and the guide were rebuilt from fresh runs of this code.
