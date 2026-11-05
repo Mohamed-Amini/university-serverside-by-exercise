@@ -1,0 +1,23 @@
+{
+  "name": "velograd-pz4",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "scripts": {
+    "pg:start": "node src/cluster.ts start",
+    "pg:stop": "node src/cluster.ts stop",
+    "start": "node src/Main.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/node": "^24.3.0",
+    "@types/pg": "^8.23.1"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1"
+  }
+}

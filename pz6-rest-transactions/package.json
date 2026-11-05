@@ -1,0 +1,26 @@
+{
+  "name": "velograd-pz6",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "scripts": {
+    "pg:start": "node src/cluster.ts start",
+    "pg:stop": "node src/cluster.ts stop",
+    "start": "node src/Application.ts",
+    "demo": "node src/demo.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/node": "^24.3.0",
+    "@types/pg": "^8.23.1",
+    "@types/express": "5.0.6"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1",
+    "express": "5.3.0"
+  }
+}

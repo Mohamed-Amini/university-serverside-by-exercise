@@ -1,0 +1,183 @@
+=== PZ6 ===
+Практическое задание №6. REST -
+сервис, транзакции и Spring Boot
+Курс: Серверное программирование
+Лекция: Л6–Л7 — REST ; Л8 — Транзакции
+A . Общая постановка
+Цель: реализовать REST API на Spring Boot , использовать Repository из ПЗ5 и обеспечить
+целостность данных через @ Transactional .
+Контекст: Финальный Java -этап сквозного проекта. Repository и Entity — из ПЗ5.
+Требования
+1. REST -сервис с эндпоинтами GET (список), POST (создание), DELETE (по id ).
+2. Ответы в формате JSON ; модель из нескольких таблиц ( DTO /проекция).
+3. Сервисный слой с @ Transactional для составной бизнес-операции.
+4. Демонстрация rollback при ошибке в транзакции.
+5. Демо-клиент, отображающий GET -результат (опционально — доп. балл).
+Критерии приёмки
+☐ Spring Boot приложение запускается
+☐ GET/POST/DELETE работают через Repository/Service
+☐ JSON и DTO корректны
+☐ Транзакция: успех фиксируется, при ошибке — rollback
+☐ Демо-клиент (опционально)
+Отчёт: URL эндпоинтов, примеры запросов, код сервиса с @ Transactional , скриншот
+rollback .
+B . Референсная реализация ( Java + PostgreSQL )
+Стек: Spring Boot 3, spring-boot-starter-web, Spring Data JPA, @Transactional, PostgreSQL.
+
+Подготовка
+ ПЗ5 выполнено: Entity, Repository, application.properties.
+Пошаговая реализация
+Часть 1. REST API (Л6–Л7)
+Шаг 1. Подключение Web -слоя Spring Boot
+Цель: получить встроенный веб-сервер и REST -контроллеры поверх Repository из ПЗ5.
+Используем: spring-boot-starter-web, spring-boot-maven-plugin
+Добавьте parent org.springframework.boot и spring-boot-starter-web. Убедитесь, что spring-
+boot-starter-data-jpa из ПЗ5 сохранён. Добавьте spring-boot-maven-plugin для запуска через
+mvn spring-boot:run.
+<parent>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-parent</artifactId>
+<version>3.2.5</version>
+</parent>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+Шаг 2. Точка входа и запуск сервера
+Цель: убедиться, что приложение стартует на порту 8080.
+Используем: @ SpringBootApplication , SpringApplication . run
+Создайте класс Application с аннотацией @ SpringBootApplication и методом main . Запустите
+— в логах должно появиться «Started Application on port 8080».
+@SpringBootApplication
+public class Application {
+public static void main(String[] args) {
+SpringApplication.run(Application.class, args);
+}
+}
+Шаг 3. REST -контроллер: GET и DELETE
+Цель: реализовать чтение списка и удаление ресурса по id через Repository .
+Используем: @ RestController , @ GetMapping , @ DeleteMapping , AuthorRepository
+
+Создайте контроллер с внедрением AuthorRepository (@ RequiredArgsConstructor ). GET
+возвращает List < Author > в JSON . DELETE вызывает deleteById и возвращает 204.
+@RestController
+@RequestMapping(\\"/api/authors\\")
+@RequiredArgsConstructor
+public class AuthorController {
+private final AuthorRepository repository;
+@GetMapping
+public List<Author> list() { return repository.findAll(); }
+@DeleteMapping(\\"/{id}\\")
+public ResponseEntity<Void> delete(@PathVariable Long id) {
+repository.deleteById(id);
+return ResponseEntity.noContent().build();
+}
+}
+Шаг 4. REST -контроллер: POST (создание)
+Цель: принимать JSON в теле запроса и сохранять сущность через Repository .
+Используем: @ PostMapping , @ RequestBody
+Добавьте POST -метод с @ RequestBody Author . Сохраните через repository . save () и верните
+созданный объект с 200 OK .
+@PostMapping
+public ResponseEntity<Author> create(@RequestBody Author author) {
+return ResponseEntity.ok(repository.save(author));
+}
+Шаг 5. Составная модель ( DTO / проекция)
+Цель: вернуть данные из нескольких таблиц одним JSON -объектом.
+Используем: DTO-класс, Hibernate SQL query или JOIN FETCH
+Создайте класс AuthorBookDto (authorName, bookTitle, year). Реализуйте GET /api/author-
+books, возвращающий List<AuthorBookDto> из JOIN-запроса или native query с alias.
+public record AuthorBookDto(String authorName, String bookTitle, int year) {}
+@GetMapping(\\"/author-books\\")
+public List<AuthorBookDto> authorBooks() {
+return bookRepository.findAuthorBookProjection();
+}
+
+Шаг 6. Проверка REST и демо-клиент
+Цель: убедиться, что API работает, и показать результат пользователю.
+Используем: curl / Postman / HTML fetch()
+Проверьте эндпоинты curl -ом. Для демо-клиента достаточно HTML -страницы с
+fetch ('/ api / authors '), выводящей JSON в таблицу.
+curl http://localhost:8080/api/authors
+curl -X POST http://localhost:8080/api/authors
+-H \\"Content-Type: application/json\\"
+-d '{\\"name\\":\\"Новый автор\\"}'
+Часть 2. Транзакции (Л8)
+Шаг 7. Сервисный слой и @ Transactional
+Цель: вынести бизнес-логику из контроллера в сервис и обеспечить атомарность
+операций, затрагивающих несколько сущностей.
+Используем: @ Service , @ Transactional , propagation REQUIRED
+Создайте AuthorService с методом, выполняющим несколько изменений в БД (например,
+создать автора и несколько связанных книг). Пометьте метод @Transactional — при
+RuntimeException все изменения откатятся.
+@Service
+@RequiredArgsConstructor
+public class AuthorService {
+private final AuthorRepository authorRepo;
+private final BookRepository bookRepo;
+@Transactional
+public Author createAuthorWithBooks(Author author, List<Book> books) {
+Author saved = authorRepo.save(author);
+books.forEach(b -> { b.setAuthor(saved); bookRepo.save(b); });
+return saved;
+}
+}
+Шаг 8. Демонстрация rollback
+Цель: показать, что при ошибке внутри транзакции данные не сохраняются частично.
+Используем: @ Transactional , намеренное исключение, READ COMMITTED
+
+Вызовите сервисный метод, который после save () бросает RuntimeException . Проверьте в
+БД: ни автор, ни книги не должны сохраниться. Затем выполните тот же сценарий без
+ошибки — данные должны появиться.
+@Transactional
+public void transferDemo(Long fromId, Long toId, BigDecimal amount) {
+Account from = accountRepo.findById(fromId).orElseThrow();
+Account to = accountRepo.findById(toId).orElseThrow();
+from.debit(amount);
+to.credit(amount);
+// throw new RuntimeException(\\"test rollback\\");
+accountRepo.save(from);
+accountRepo.save(to);
+}
+Шаг 9. Настройка readOnly и обработка ошибок
+Цель: оптимизировать read -операции и корректно возвращать HTTP -статусы из REST .
+Используем: @Transactional(readOnly = true), ResponseEntity, @ExceptionHandler
+Для GET -методов сервиса используйте @ Transactional ( readOnly = true ). В контроллере
+обрабатывайте EntityNotFoundException → 404 Not Found . Задокументируйте в отчёте:
+какой уровень изоляции использует PostgreSQL по умолчанию.
+@Transactional(readOnly = true)
+public List<AuthorBookDto> getAuthorBooks() { ... }
+@ExceptionHandler(EntityNotFoundException.class)
+public ResponseEntity<Void> notFound() {
+return ResponseEntity.notFound().build();
+}
+C . Альтернативный стек (по согласованию с преподавателем)
+Допускается выполнение на другом стеке при сохранении результата из секции A .
+Компонент Возможные альтернативы
+REST ASP.NET Core Web API, FastAPI, NestJS
+Транзакции EF Core TransactionScope, SQLAlchemy session.commit/rollback
+Клиент HTML+JS, RestTemplate/WebClient
+Перед началом работы согласуйте выбранный стек с
+преподавателем.
+
+=== EXAM ===
+Серверное программирование . Вопросы к экзамену
+Cache Object Script:
+1. Классы: Соответствие ООП и SQL представления.
+2. Свойства: Типы данных, ограничения, дополнительные параметры.
+3. Свойства: Генерация данных, Population.
+4. Ссылочные свойства. Внешние ключи.
+5. Ссылочные свойства. Отношения «один ко многим» и «многие к одному».
+6. Ссылочные свойства. Отношения «один к одному» и «многие ко многим».
+7. Индексы, Типы индексов, Производительность запросов.
+8. SQL: виды join, различия. Неявный Join и стрелочный синтаксис.
+Java-Hibernate-Spring:
+1. Hibernate маппинг классов: Конфигурация hibernate, Базовые аннотации.
+2. Hibernate маппинг классов: Отношения «один ко многим» и «многие к одному», Типы
+Fetching.
+3. Hibernate: Роль интерфейса Session, Управление транзакциями.
+4. Hibernate: Различия между нативным SQL и HQL.
+5. Hibernate Criteria API: Синтаксис, Примеры запросов.
+6. Spring Boot: Преимущества использования, Конфигурация.
+7. Spring Boot Web: Аннотации и настройки REST контроллера.
+8. Сериализация, Использование JSON.

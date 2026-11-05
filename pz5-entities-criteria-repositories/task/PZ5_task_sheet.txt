@@ -1,0 +1,145 @@
+=== PZ5 ===
+Практическое задание №5. Entity
+mapping, Criteria API и Spring Data JPA
+Курс: Серверное программирование
+Лекция: Л5 — ORM : связи и запросы; Л5.5 — Spring Data
+A . Общая постановка
+Цель: реализовать модель данных на Java , освоить Criteria API и перейти к декларативному
+доступу через Spring Data JPA Repository .
+Контекст: Продолжение Hibernate -проекта из ПЗ4. Repository из этой работы используется
+в ПЗ6.
+Требования
+1. Создать Entity -классы для всех таблиц с аннотациями JPA / Hibernate .
+2. DAO для сущностей: findAll через Criteria API.
+3. Переписать методы ПЗ4 на Criteria API .
+4. Метод с динамическими фильтрами (условное add Restrictions ).
+5. CRUD: get, save, delete; демо связи 1:N.
+6. Создать Spring Data Repository для основных сущностей.
+7. Реализовать query method и один метод с @ Query .
+Критерии приёмки
+☐ Entity для всех таблиц
+☐ Criteria API запросы работают
+☐ Динамический фильтр и демо связи 1: N
+☐ JpaRepository подключён и используется
+☐ Query method и @ Query возвращают корректные данные
+Отчёт: классы Entity / DAO / Repository , примеры вызовов, вывод в консоль.
+
+B . Референсная реализация ( Java + PostgreSQL )
+Стек: Hibernate, Criteria API, Spring Data JPA, PostgreSQL.
+Подготовка
+ ПЗ4 выполнено: Maven-проект, hibernate.cfg.xml, DAO работает.
+ Entity -классы из первой части работы понадобятся для Repository .
+Пошаговая реализация
+Часть 1. Entity mapping и Criteria API (Л5)
+Шаг 1. Создание Entity -классов
+Цель: отобразить таблицы БД на Java -классы с аннотациями JPA .
+Используем: @ Entity , @ Table , @ Id , @ GeneratedValue , @ Column
+Для каждой таблицы создайте класс в пакете model . Добавьте классы в hibernate . cfg . xml
+(< mapping class =\\"...\\"/>) или используйте persistence . xml .
+@Entity
+@Table(name = \\"author\\")
+public class Author {
+@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
+@Column(nullable = false)
+private String name;
+// getters/setters
+}
+Шаг 2. Маппинг связей 1: N
+Цель: настроить двустороннюю связь между сущностями Author и Book .
+Используем: @OneToMany, @ManyToOne, mappedBy
+В Author добавьте List<Book> books с @OneToMany(mappedBy=\\"author\\"). В Book — поле
+Author author с @ManyToOne и @JoinColumn.
+// Author
+@OneToMany(mappedBy = \\"author\\", cascade = CascadeType.ALL)
+private List<Book> books = new ArrayList<>();
+// Book
+@ManyToOne
+@JoinColumn(name = \\"author_id\\")
+private Author author;
+
+Шаг 3. DAO с Criteria API — findAll
+Цель: получить все записи сущности программным запросом без SQL .
+Используем: session.createCriteria (Hibernate) или JPA CriteriaBuilder
+Создайте AuthorDao с методом findAll(), использующим Criteria API. Перепишите методы
+getName и listByIdRange из ПЗ4 на Criteria + Restrictions.
+public List<Author> findAll() {
+Criteria criteria = getSession().createCriteria(Author.class);
+return criteria.list();
+}
+public List<Author> findByNameLike(String prefix) {
+return getSession().createCriteria(Author.class)
+.add(Restrictions.like(\\"name\\", prefix + \\"%\\"))
+.list();
+}
+Шаг 4. Динамические фильтры
+Цель: строить запрос, в котором условия WHERE добавляются только при наличии
+параметров.
+Используем: Criteria , Restrictions , условная логика
+Реализуйте метод search ( name , yearFrom , yearTo ): если name != null — добавьте
+Restrictions . like ; если yearFrom != null — Restrictions . ge и т.д.
+Criteria c = session.createCriteria(Book.class);
+if (name != null) c.add(Restrictions.like(\\"title\\", \\"%\\" + name + \\"%\\"));
+if (yearFrom != null) c.add(Restrictions.ge(\\"year\\", yearFrom));
+if (yearTo != null) c.add(Restrictions.le(\\"year\\", yearTo));
+return c.list();
+Шаг 5. CRUD и демонстрация связи 1: N
+Цель: выполнить полный цикл операций и показать привязку дочерних объектов к
+родителю.
+Используем: session.get/save/delete, begin/commit
+Загрузите Author , создайте несколько Book , привяжите через setAuthor / setBooks ,
+сохраните в транзакции. Выведите список книг автора через Criteria.
+
+begin();
+Author author = session.get(Author.class, 1L);
+Book book = new Book(\\"Новая книга\\", 2024);
+book.setAuthor(author);
+author.getBooks().add(book);
+session.save(book);
+commit();
+Часть 2. Spring Data JPA (Л5.5)
+Шаг 6. Подключение Spring Data JPA
+Цель: перейти от ручного DAO к декларативным Repository , сохранив Entity из части 1.
+Используем: spring-boot-starter-data-jpa, application.properties
+Добавьте spring-boot-starter-data-jpa и spring-boot-starter (без web — веб-слой подключите
+в ПЗ6). Настройте datasource в application.properties аналогично hibernate.cfg.xml.
+Убедитесь, что @Entity сканируются Spring Boot.
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+# application.properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/sp_course
+spring.datasource.username=sp_user
+spring.datasource.password=secret
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+Шаг 7. Интерфейс Repository
+Цель: получить CRUD -операции без написания реализации — Spring Data генерирует их
+автоматически.
+Используем: JpaRepository, @Repository
+Создайте AuthorRepository extends JpaRepository<Author, Long>. Проверьте findAll(),
+findById(), save(), deleteById() в @SpringBootTest или временном CommandLineRunner.
+@Repository
+public interface AuthorRepository extends JpaRepository<Author, Long> {
+}
+// Использование
+
+List<Author> all = authorRepository.findAll();
+authorRepository.save(new Author(\\"Новый автор\\"));
+Шаг 8. Query methods и @ Query
+Цель: реализовать поиск по соглашению об именах и произвольный JPQL / SQL запрос.
+Используем: findByNameStartsWith, @Query, @Param
+Добавьте метод findByNameStartingWithIgnoreCase(String prefix) — Spring Data построит
+запрос по имени метода. Для сложного JOIN используйте @ Query с JPQL или
+nativeQuery = true .
+List<Author> findByNameStartingWithIgnoreCase(String prefix);
+@Query(\\"SELECT b FROM Book b JOIN b.author a WHERE a.name = :name\\")
+List<Book> findBooksByAuthorName(@Param(\\"name\\") String name);
+C . Альтернативный стек (по согласованию с преподавателем)
+Допускается выполнение на другом стеке при сохранении результата из секции A .
+Компонент Возможные альтернативы
+ORM / Repository JPA Criteria API, EF Core DbContext, SQLAlchemy Repository
+Spring Data Micronaut Data, Quarkus Panache
+Перед началом работы согласуйте выбранный стек с
+преподавателем.

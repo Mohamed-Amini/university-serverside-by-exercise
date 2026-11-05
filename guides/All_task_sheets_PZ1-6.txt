@@ -1,0 +1,698 @@
+=== PZ1 ===
+Практическое задание №1.
+Проектирование и создание базы
+данных
+Курс: Серверное программирование
+Лекция: Л1 — Введение в базы данных
+A. Общая постановка
+Цель: спроектировать архитектуру БД предметной области и реализовать базовые
+таблицы с данными.
+Контекст: Выберите предметную область — она будет использоваться во всех
+последующих работах курса.
+Требования
+1. Определить предметную область и оформить архитектуру БД (UML или ER, минимум 5
+таблиц).
+2. Создать схему данных: таблицы, типы столбцов, первичные ключи.
+3. Заполнить каждую таблицу не менее чем 10 записями.
+4. Составить запрос CROSS JOIN по всем созданным таблицам.
+Критерии приёмки
+☐ Диаграмма модели данных (≥5 таблиц)
+☐ DDL-скрипт создания таблиц
+☐ Дамп или скрипт заполнения данными
+☐ SQL CROSS JOIN с результатом выполнения
+Отчёт: диаграмма, SQL-скрипты, скриншоты выполнения запросов.
+B. Референсная реализация (Java + PostgreSQL)
+Стек: PostgreSQL 16+, pgAdmin или DBeaver, SQL.
+
+Подготовка
+ Установить PostgreSQL с официального сайта postgresql.org или postgrespro.ru
+ Создать роль и базу данных для учебного проекта.
+ Подключиться через pgAdmin, DBeaver или psql.
+Пошаговая реализация
+Шаг 1. Выбор предметной области и проектирование модели
+Цель: получить согласованную логическую модель данных, которую можно реализовать в
+PostgreSQL.
+Используем: бумага / draw.io / DBeaver ER-диаграмма
+Определите предметную область (библиотека, интернет-магазин, расписание занятий и
+т.д.). Выделите сущности, их атрибуты и первичные ключи. Минимум 5 таблиц.
+Зафиксируйте модель в виде ER- или UML-диаграммы — она понадобится в следующих
+работах.
+Шаг 2. Создание пользователя и базы данных
+Цель: изолировать учебный проект в отдельной БД с выделенными правами доступа.
+Используем: psql или pgAdmin
+Создайте роль и базу. Подключитесь к новой БД от имени созданного пользователя.
+CREATE USER sp_user WITH PASSWORD 'secret';
+CREATE DATABASE sp_course OWNER sp_user;
+\\\\c sp_course sp_user
+Шаг 3. Реализация DDL — создание таблиц
+Цель: перенести логическую модель в физическую схему PostgreSQL.
+Используем: SQL, SERIAL/BIGSERIAL, PRIMARY KEY, NOT NULL
+Для каждой сущности напишите CREATE TABLE. Укажите типы столбцов (INTEGER, TEXT,
+VARCHAR, DATE, BOOLEAN и т.д.) и первичные ключи. При необходимости используйте
+SERIAL для автоинкремента.
+CREATE TABLE author (
+id SERIAL PRIMARY KEY,
+name TEXT NOT NULL
+);
+CREATE TABLE book (
+
+id SERIAL PRIMARY KEY,
+title TEXT NOT NULL,
+year INTEGER
+);
+Шаг 4. Заполнение таблиц тестовыми данными
+Цель: получить достаточный набор данных для проверки запросов (минимум 10 строк в
+каждой таблице).
+Используем: INSERT, множественный INSERT, \\\\copy (опционально)
+Добавьте данные через INSERT или загрузите CSV через \\\\copy. Данные должны быть
+осмысленными в рамках предметной области.
+INSERT INTO author (name) VALUES
+('Толстой'),
+('Достоевский'),
+('Пушкин');
+INSERT INTO book (title, year) VALUES
+('Война и мир', 1869),
+('Преступление и наказание', 1866);
+Шаг 5. CROSS JOIN по всем таблицам
+Цель: показать декартово произведение всех таблиц и понять его cardinality.
+Используем: SELECT, CROSS JOIN (или запятая в FROM)
+Составьте запрос, соединяющий все созданные таблицы через CROSS JOIN. Обратите
+внимание на количество строк в результате: оно равно произведению числа строк каждой
+таблицы.
+SELECT *
+FROM author
+CROSS JOIN book;
+C. Альтернативный стек (по согласованию с преподавателем)
+Допускается выполнение на другом стеке при сохранении результата из секции A.
+Компонент Возможные альтернативы
+СУБД MS SQL Server (SSMS), MySQL (Workbench),
+SQLite
+
+Клиент Azure Data Studio, DataGrip, командная
+строка СУБД
+Перед началом работы согласуйте выбранный стек с
+преподавателем.
+
+======================================================================
+
+=== PZ2 ===
+Практическое задание №2. Связи
+между таблицами и генерация
+данных
+Курс: Серверное программирование
+Лекция: Л2 — Связи и генерация
+A . Общая постановка
+Цель: реализовать связи между таблицами и сгенерировать большой объём тестовых
+данных.
+Контекст: Продолжение сквозного проекта — связи должны соответствовать
+разработанной модели.
+Требования
+1. Проанализировать модель и определить тип связи для каждой пары таблиц.
+2. Реализовать связи ( FK , UNIQUE , промежуточные таблицы для M : N ).
+3. Продемонстрировать INNER, LEFT, FULL OUTER, CROSS JOIN.
+4. Сгенерировать не менее 10 000 записей в одной или нескольких таблицах.
+5. Выполнить типовой SQL -запрос приложения с использованием связей.
+Критерии приёмки
+☐ FK и ограничения целостности в DDL
+☐ Примеры разных JOIN с пояснением
+☐ ≥10 000 сгенерированных записей
+☐ Типовой запрос приложения
+Отчёт: SQL -скрипты, план генерации, результаты JOIN и типового запроса.
+B . Референсная реализация ( Java + PostgreSQL )
+Стек: PostgreSQL, generate_series / COPY / Java Faker.
+
+Подготовка
+ ПЗ1 выполнено: таблицы и базовые данные созданы.
+ Определены виды связей (1:1, 1: N , M : N ) для вашей модели.
+Пошаговая реализация
+Шаг 1. Анализ и выбор типов связей
+Цель: для каждой пары таблиц определить корректный тип связи до написания FK .
+Используем: ER -диаграмма из ПЗ1
+Разметьте связи: один-ко-многим ( FK в таблице «многие»), один-к-одному ( FK + UNIQUE ),
+многие-ко-многим (промежуточная таблица с двумя FK ). Запишите решения в отчёт.
+Шаг 2. Реализация внешних ключей
+Цель: обеспечить ссылочную целостность на уровне БД.
+Используем: ALTER TABLE, REFERENCES, ON DELETE
+Добавьте FK - constraint к существующим таблицам. Выберите ON DELETE RESTRICT , CASCADE
+или SET NULL в зависимости от бизнес-логики.
+ALTER TABLE book
+ADD COLUMN author_id INTEGER
+REFERENCES author(id)
+ON DELETE RESTRICT;
+Шаг 3. Демонстрация JOIN -запросов
+Цель: показать различия между типами соединений на реальных данных.
+Используем: INNER JOIN, LEFT JOIN, FULL OUTER JOIN, CROSS JOIN
+Напишите по одному запросу для каждого типа JOIN . Прокомментируйте, чем отличается
+результат (какие строки попадают, какие отсеиваются).
+-- INNER: только совпадающие
+SELECT a.name, b.title
+FROM author a
+INNER JOIN book b ON b.author_id = a.id;
+-- LEFT: все авторы, даже без книг
+SELECT a.name, b.title
+FROM author a
+LEFT JOIN book b ON b.author_id = a.id;
+
+Шаг 4. Массовая генерация данных
+Цель: заполнить таблицы ≥10 000 записями для последующих нагрузочных тестов.
+Используем: generate_series, random(), md5(); или COPY FROM CSV; или Java Faker
+Сначала сгенерируйте родительские сущности, затем дочерние с корректными FK .
+generate _ series удобен для PostgreSQL ; Faker — если нужны правдоподобные строки.
+INSERT INTO book (title, author_id)
+SELECT
+md5(random()::text),
+(1 + floor(random() * 100))::int
+FROM generate_series(1, 10000);
+Шаг 5. Типовой запрос приложения
+Цель: сформулировать запрос, который реально мог бы выполнять ваше приложение.
+Используем: JOIN , WHERE , ORDER BY
+Придумайте сценарий (например, «список книг автора с фильтром по году») и реализуйте
+его одним SQL -запросом с использованием связей.
+SELECT b.title, b.year, a.name AS author
+FROM book b
+JOIN author a ON a.id = b.author_id
+WHERE b.year >= 1900
+ORDER BY b.year DESC;
+C . Альтернативный стек (по согласованию с преподавателем)
+Допускается выполнение на другом стеке при сохранении результата из секции A .
+Компонент Возможные альтернативы
+СУБД MS SQL (BULK INSERT), MySQL (LOAD DATA)
+Генерация Python Faker, C# Bogus, ручной CSV
+Перед началом работы согласуйте выбранный стек с
+преподавателем.
+
+======================================================================
+
+=== PZ3 ===
+Практическое задание №3.
+Оптимизация запросов и индексы
+Курс: Серверное программирование
+Лекция: Л3 — Оптимизация
+A . Общая постановка
+Цель: провести нагрузочное тестирование БД и оптимизировать типовой запрос с
+помощью индексов.
+Контекст: Используется схема и данные из ПЗ1–2.
+Требования
+1. Предзаполнить таблицы до ≥500 000 записей суммарно.
+2. Сформулировать типовой запрос: ≥3 таблицы, ≥3 условия WHERE , разные типы данных.
+3. Зафиксировать план и время выполнения до оптимизации.
+4. Добавить индексы, перестроить их, повторить замеры.
+5. Оформить таблицу: индексы → время → стоимость запроса.
+Критерии приёмки
+☐ ≥500 K записей
+☐ EXPLAIN ANALYZE до и после
+☐ Таблица сравнения производительности
+☐ Выводы об эффективности индексов
+Отчёт: SQL запроса, планы EXPLAIN , таблица замеров, выводы.
+B . Референсная реализация ( Java + PostgreSQL )
+Стек: PostgreSQL, EXPLAIN (ANALYZE, BUFFERS), CREATE INDEX, REINDEX.
+Подготовка
+ ПЗ2 выполнено: связи и ≥10 K записей на месте.
+ Типовой запрос приложения из ПЗ2 можно взять за основу и усложнить.
+
+Пошаговая реализация
+Шаг 1. Массовая загрузка до 500 K + записей
+Цель: получить объём данных, при котором разница между Seq Scan и Index Scan заметна.
+Используем: generate _ series , COPY , отключение индексов на время загрузки
+(опционально)
+Догрузите данные до ≥500 000 записей суммарно. Для ускорения можно временно
+удалить неключевые индексы и создать их после загрузки.
+INSERT INTO book (title, author_id, year)
+SELECT md5(random()::text), (random()*1000+1)::int, 1950 + (random()*75)::int
+FROM generate_series(1, 500000);
+Шаг 2. Формулировка типового тяжёлого запроса
+Цель: получить запрос, который соединяет ≥3 таблицы и фильтрует по ≥3 условиям разных
+типов.
+Используем: JOIN , WHERE (строки, числа, даты)
+Составьте запрос, имитирующий реальную нагрузку: несколько JOIN , фильтрация по
+строке, числу и дате, сортировка или LIMIT .
+SELECT a.name, b.title, b.year
+FROM book b
+JOIN author a ON a.id = b.author_id
+JOIN category c ON c.id = b.category_id
+WHERE a.name LIKE 'A%'
+AND b.year BETWEEN 2000 AND 2020
+AND c.code = 'FICTION'
+ORDER BY b.year DESC
+LIMIT 100;
+Шаг 3. Замер «до оптимизации»
+Цель: зафиксировать базовый план и время выполнения без целевых индексов.
+Используем: EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+Выполните EXPLAIN ANALYZE . Сохраните план, обратите внимание на Seq Scan , cost , actual
+time и количество прочитанных буферов ( shared hit / read ).
+EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+SELECT ... -- ваш запрос
+
+Шаг 4. Создание и перестройка индексов
+Цель: добавить индексы на столбцы из WHERE и JOIN , затем перестроить их.
+Используем: CREATE INDEX , REINDEX
+Создайте индексы по одному, каждый раз повторяя EXPLAIN ANALYZE . После массовой
+загрузки выполните REINDEX для актуальной статистики.
+CREATE INDEX idx _ book _ year ON book ( year );
+CREATE INDEX idx _ author _ name ON author ( name );
+REINDEX INDEX idx _ book _ year ;
+Шаг 5. Замер «после оптимизации» и таблица результатов
+Цель: сравнить производительность и сформулировать выводы.
+Используем: EXPLAIN ANALYZE , таблица в отчёте
+Повторите EXPLAIN ANALYZE с полным набором индексов. Заполните таблицу: какие
+индексы созданы → время выполнения → cost корневого узла → тип сканирования ( Seq
+Scan / Index Scan / Bitmap Scan ).
+C . Альтернативный стек (по согласованию с преподавателем)
+Допускается выполнение на другом стеке при сохранении результата из секции A .
+Компонент Возможные альтернативы
+СУБД MS SQL (Execution Plan), MySQL (EXPLAIN)
+Инструменты pg_stat_statements, встроенный профайлер СУБД
+Перед началом работы согласуйте выбранный стек с
+преподавателем.
+
+======================================================================
+
+=== PZ4 ===
+Серверное программирование. ПЗ#4
+Практическое задание №4.
+Подготовительная работа.
+Для выполнения данного задания необходимо установить IntelliJ Idea.
+Получить данную IDE бесплатно для учебных целей можно воспользовавшись данной
+программой: https://www.jetbrains.com/shop/eform/students используя вашу электронную почту
+СФУ.
+Кроме того, потребуется библиотека, содержащая CacheDriver, её вы можете найти в заголовке
+курса на e.sfu-kras.ru (jdbc-1.0).
+Задание.
+В рамках данной практической работы необходимо настроить связь между java приложением и
+базой данных, использую ORM прослойку Hibernate. Также необходимо протестировать данную
+связь путём исполнения стандартных запросов.
+1. Создайте в IDE новый Maven проект:
+Рекомендуется использовать jdk версии 1.8 или выше.
+Укажите GroupId и ArtifactId.
+GroupId чаще всего содержит наименование организации или подразделения, и должно
+соответствовать правилам именавания java пакетов. Можете использовать для учебных
+заданий GroupId: edu.sfu.
+ArtifactId - это непосредственное название текущего проекта.
+2. Сгенерированный проект должен иметь следующую структуру:
+
+Серверное программирование. ПЗ#4
+3. Файл Pom помимо служебной информации содержит так же информацию о зависимостях.
+Добавьте следующую зависимость:
+IDE предложит импортировать ее, подтвердите данное действие и дождитесь окончания
+загрузки. Если Maven используется на вашем компьютере впервые – будет сгенерирован
+локальный репозиторий .m2, который будет содержать скачанные библиотеки, которые в
+дальнейшем можно будет использовать напрямую в других проектах.
+4. Необходимо добавить зависимость для подгрузки драйвера базы данных
+Например:
+но лучше использовать более свежий драйвер на момент исполнения работы
+5. Повторите импорт или же запустите команду сборки проекта, для этого можно
+воспользоваться правой панелью Maven и запустить команду install.
+6. После того, как все зависимости подгружены можно приступать к настройкам
+подключения. Для этого в resources создайте новый xml файл: hibernate.cfg.xml . Данный
+файл будет содержать все настройки подключения, а так же mapping классов для
+следующих работ.
+
+Серверное программирование. ПЗ#4
+<? xml version =\\"1.0\\" encoding =\\"utf-8\\" ?>
+<!DOCTYPE hibernate-configuration SYSTEM
+\\"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd\\" >
+<hibernate-configuration>
+<session-factory>
+<property
+name =\\"hibernate.connection.driver_class\\" > org.postgresql.Driver </property>
+<property
+name =\\"hibernate.connection.url\\" > jdbc:postgresql://localhost:5432/testdb </prop
+erty>
+<property name =\\"hibernate.show_sql\\" > false </property>
+<property name =\\"hibernate.connection.username\\" > user </property>
+<property name =\\"connection.password\\" > password </property>
+</session-factory>
+</hibernate-configuration>
+Здесь user и password – созданный вами в первой работе при создании базы данных
+Driver_class – соответствует драйверу JDBC предоставляемого вашей СУБД (в данном
+случае postgreSQL)
+URL – адрес подключения к БД
+7. Создайте новый java класс manager.DAO, для описания универсального взаимодействия с
+БД.
+8. Создайте в данном классе следующие статические поля:
+ThreadLocal<Session> session = new ThreadLocal<Session>();
+SessionFactory sessionFactory = new Configuration().configure(\\"hibernate.cfg.xml\\").buildSessionFactory();
+Данные объекты потребуются нам для контроля сессий подключения.
+9. Создайте в DAO статический метод getSession(), для получения новой сессии из
+sessionFactory. Данный метод должен проверять, существует ли открытая сессия в DAO, и в
+случае, если ее нет – запрашивать новую сессию, помещать ее в статическое поле session и
+возвращать, как результат выполнения метода.
+10. Создайте в DAO статические методы begin и commit . Первый должен получать сессию и
+начинать транзакцию ( beginTransaction() ), второй должен подтверждать ранее открытую
+транзакцию у текущей сессии ( getTransaction().commit() ).
+11. Создайте новый класс TestSrvs в пакете services. Данный класс должен являться
+наследником DAO. Реализуем в нем тестовый метод getName:
+Где field – текстовое поле вашей таблицы, а pkg.table – ваша таблица из БД, а id – параметр
+функции.
+12. Создайте класс Main. И реализуйте в нем точку входа.
+13. Вызовите в данном методе созданный ранее метод getName. Выведите результат в
+консоль через функцию System.oup.println ( быстрый набор – sout Ctr+пробел – поверьте,
+данная функция потребуется вам очень часто ).
+14. Запустите программу использую зеленую кнопку слева от функции main – это
+автоматически создаст конфигурацию запуска, которую можно будет использовать дальше
+через стандартный запуск:
+
+Серверное программирование. ПЗ#4
+Результатом работы функции должна быть строка содержащее поле из записи в БД с
+заданным ID.
+15. По аналогии с предыдущим методом самостоятельно реализуйте еще 2.
+1) Метод, который возвращает список строковых значений одного поля из заданного
+промежутка ID
+2) Метод, для создания новых записей в БД, для одной из таблиц. В отличии от
+предыдущих методов – данные метод должен быть обернут в пару begin() commit(), для
+того чтобы результат сохранился, а так же вместо метода list должен использовать метод
+executeUpdate.
+
+======================================================================
+
+=== PZ5 ===
+Практическое задание №5. Entity
+mapping, Criteria API и Spring Data JPA
+Курс: Серверное программирование
+Лекция: Л5 — ORM : связи и запросы; Л5.5 — Spring Data
+A . Общая постановка
+Цель: реализовать модель данных на Java , освоить Criteria API и перейти к декларативному
+доступу через Spring Data JPA Repository .
+Контекст: Продолжение Hibernate -проекта из ПЗ4. Repository из этой работы используется
+в ПЗ6.
+Требования
+1. Создать Entity -классы для всех таблиц с аннотациями JPA / Hibernate .
+2. DAO для сущностей: findAll через Criteria API.
+3. Переписать методы ПЗ4 на Criteria API .
+4. Метод с динамическими фильтрами (условное add Restrictions ).
+5. CRUD: get, save, delete; демо связи 1:N.
+6. Создать Spring Data Repository для основных сущностей.
+7. Реализовать query method и один метод с @ Query .
+Критерии приёмки
+☐ Entity для всех таблиц
+☐ Criteria API запросы работают
+☐ Динамический фильтр и демо связи 1: N
+☐ JpaRepository подключён и используется
+☐ Query method и @ Query возвращают корректные данные
+Отчёт: классы Entity / DAO / Repository , примеры вызовов, вывод в консоль.
+
+B . Референсная реализация ( Java + PostgreSQL )
+Стек: Hibernate, Criteria API, Spring Data JPA, PostgreSQL.
+Подготовка
+ ПЗ4 выполнено: Maven-проект, hibernate.cfg.xml, DAO работает.
+ Entity -классы из первой части работы понадобятся для Repository .
+Пошаговая реализация
+Часть 1. Entity mapping и Criteria API (Л5)
+Шаг 1. Создание Entity -классов
+Цель: отобразить таблицы БД на Java -классы с аннотациями JPA .
+Используем: @ Entity , @ Table , @ Id , @ GeneratedValue , @ Column
+Для каждой таблицы создайте класс в пакете model . Добавьте классы в hibernate . cfg . xml
+(< mapping class =\\"...\\"/>) или используйте persistence . xml .
+@Entity
+@Table(name = \\"author\\")
+public class Author {
+@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
+@Column(nullable = false)
+private String name;
+// getters/setters
+}
+Шаг 2. Маппинг связей 1: N
+Цель: настроить двустороннюю связь между сущностями Author и Book .
+Используем: @OneToMany, @ManyToOne, mappedBy
+В Author добавьте List<Book> books с @OneToMany(mappedBy=\\"author\\"). В Book — поле
+Author author с @ManyToOne и @JoinColumn.
+// Author
+@OneToMany(mappedBy = \\"author\\", cascade = CascadeType.ALL)
+private List<Book> books = new ArrayList<>();
+// Book
+@ManyToOne
+@JoinColumn(name = \\"author_id\\")
+private Author author;
+
+Шаг 3. DAO с Criteria API — findAll
+Цель: получить все записи сущности программным запросом без SQL .
+Используем: session.createCriteria (Hibernate) или JPA CriteriaBuilder
+Создайте AuthorDao с методом findAll(), использующим Criteria API. Перепишите методы
+getName и listByIdRange из ПЗ4 на Criteria + Restrictions.
+public List<Author> findAll() {
+Criteria criteria = getSession().createCriteria(Author.class);
+return criteria.list();
+}
+public List<Author> findByNameLike(String prefix) {
+return getSession().createCriteria(Author.class)
+.add(Restrictions.like(\\"name\\", prefix + \\"%\\"))
+.list();
+}
+Шаг 4. Динамические фильтры
+Цель: строить запрос, в котором условия WHERE добавляются только при наличии
+параметров.
+Используем: Criteria , Restrictions , условная логика
+Реализуйте метод search ( name , yearFrom , yearTo ): если name != null — добавьте
+Restrictions . like ; если yearFrom != null — Restrictions . ge и т.д.
+Criteria c = session.createCriteria(Book.class);
+if (name != null) c.add(Restrictions.like(\\"title\\", \\"%\\" + name + \\"%\\"));
+if (yearFrom != null) c.add(Restrictions.ge(\\"year\\", yearFrom));
+if (yearTo != null) c.add(Restrictions.le(\\"year\\", yearTo));
+return c.list();
+Шаг 5. CRUD и демонстрация связи 1: N
+Цель: выполнить полный цикл операций и показать привязку дочерних объектов к
+родителю.
+Используем: session.get/save/delete, begin/commit
+Загрузите Author , создайте несколько Book , привяжите через setAuthor / setBooks ,
+сохраните в транзакции. Выведите список книг автора через Criteria.
+
+begin();
+Author author = session.get(Author.class, 1L);
+Book book = new Book(\\"Новая книга\\", 2024);
+book.setAuthor(author);
+author.getBooks().add(book);
+session.save(book);
+commit();
+Часть 2. Spring Data JPA (Л5.5)
+Шаг 6. Подключение Spring Data JPA
+Цель: перейти от ручного DAO к декларативным Repository , сохранив Entity из части 1.
+Используем: spring-boot-starter-data-jpa, application.properties
+Добавьте spring-boot-starter-data-jpa и spring-boot-starter (без web — веб-слой подключите
+в ПЗ6). Настройте datasource в application.properties аналогично hibernate.cfg.xml.
+Убедитесь, что @Entity сканируются Spring Boot.
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+# application.properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/sp_course
+spring.datasource.username=sp_user
+spring.datasource.password=secret
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+Шаг 7. Интерфейс Repository
+Цель: получить CRUD -операции без написания реализации — Spring Data генерирует их
+автоматически.
+Используем: JpaRepository, @Repository
+Создайте AuthorRepository extends JpaRepository<Author, Long>. Проверьте findAll(),
+findById(), save(), deleteById() в @SpringBootTest или временном CommandLineRunner.
+@Repository
+public interface AuthorRepository extends JpaRepository<Author, Long> {
+}
+// Использование
+
+List<Author> all = authorRepository.findAll();
+authorRepository.save(new Author(\\"Новый автор\\"));
+Шаг 8. Query methods и @ Query
+Цель: реализовать поиск по соглашению об именах и произвольный JPQL / SQL запрос.
+Используем: findByNameStartsWith, @Query, @Param
+Добавьте метод findByNameStartingWithIgnoreCase(String prefix) — Spring Data построит
+запрос по имени метода. Для сложного JOIN используйте @ Query с JPQL или
+nativeQuery = true .
+List<Author> findByNameStartingWithIgnoreCase(String prefix);
+@Query(\\"SELECT b FROM Book b JOIN b.author a WHERE a.name = :name\\")
+List<Book> findBooksByAuthorName(@Param(\\"name\\") String name);
+C . Альтернативный стек (по согласованию с преподавателем)
+Допускается выполнение на другом стеке при сохранении результата из секции A .
+Компонент Возможные альтернативы
+ORM / Repository JPA Criteria API, EF Core DbContext, SQLAlchemy Repository
+Spring Data Micronaut Data, Quarkus Panache
+Перед началом работы согласуйте выбранный стек с
+преподавателем.
+
+======================================================================
+
+=== PZ6 ===
+Практическое задание №6. REST -
+сервис, транзакции и Spring Boot
+Курс: Серверное программирование
+Лекция: Л6–Л7 — REST ; Л8 — Транзакции
+A . Общая постановка
+Цель: реализовать REST API на Spring Boot , использовать Repository из ПЗ5 и обеспечить
+целостность данных через @ Transactional .
+Контекст: Финальный Java -этап сквозного проекта. Repository и Entity — из ПЗ5.
+Требования
+1. REST -сервис с эндпоинтами GET (список), POST (создание), DELETE (по id ).
+2. Ответы в формате JSON ; модель из нескольких таблиц ( DTO /проекция).
+3. Сервисный слой с @ Transactional для составной бизнес-операции.
+4. Демонстрация rollback при ошибке в транзакции.
+5. Демо-клиент, отображающий GET -результат (опционально — доп. балл).
+Критерии приёмки
+☐ Spring Boot приложение запускается
+☐ GET/POST/DELETE работают через Repository/Service
+☐ JSON и DTO корректны
+☐ Транзакция: успех фиксируется, при ошибке — rollback
+☐ Демо-клиент (опционально)
+Отчёт: URL эндпоинтов, примеры запросов, код сервиса с @ Transactional , скриншот
+rollback .
+B . Референсная реализация ( Java + PostgreSQL )
+Стек: Spring Boot 3, spring-boot-starter-web, Spring Data JPA, @Transactional, PostgreSQL.
+
+Подготовка
+ ПЗ5 выполнено: Entity, Repository, application.properties.
+Пошаговая реализация
+Часть 1. REST API (Л6–Л7)
+Шаг 1. Подключение Web -слоя Spring Boot
+Цель: получить встроенный веб-сервер и REST -контроллеры поверх Repository из ПЗ5.
+Используем: spring-boot-starter-web, spring-boot-maven-plugin
+Добавьте parent org.springframework.boot и spring-boot-starter-web. Убедитесь, что spring-
+boot-starter-data-jpa из ПЗ5 сохранён. Добавьте spring-boot-maven-plugin для запуска через
+mvn spring-boot:run.
+<parent>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-parent</artifactId>
+<version>3.2.5</version>
+</parent>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+Шаг 2. Точка входа и запуск сервера
+Цель: убедиться, что приложение стартует на порту 8080.
+Используем: @ SpringBootApplication , SpringApplication . run
+Создайте класс Application с аннотацией @ SpringBootApplication и методом main . Запустите
+— в логах должно появиться «Started Application on port 8080».
+@SpringBootApplication
+public class Application {
+public static void main(String[] args) {
+SpringApplication.run(Application.class, args);
+}
+}
+Шаг 3. REST -контроллер: GET и DELETE
+Цель: реализовать чтение списка и удаление ресурса по id через Repository .
+Используем: @ RestController , @ GetMapping , @ DeleteMapping , AuthorRepository
+
+Создайте контроллер с внедрением AuthorRepository (@ RequiredArgsConstructor ). GET
+возвращает List < Author > в JSON . DELETE вызывает deleteById и возвращает 204.
+@RestController
+@RequestMapping(\\"/api/authors\\")
+@RequiredArgsConstructor
+public class AuthorController {
+private final AuthorRepository repository;
+@GetMapping
+public List<Author> list() { return repository.findAll(); }
+@DeleteMapping(\\"/{id}\\")
+public ResponseEntity<Void> delete(@PathVariable Long id) {
+repository.deleteById(id);
+return ResponseEntity.noContent().build();
+}
+}
+Шаг 4. REST -контроллер: POST (создание)
+Цель: принимать JSON в теле запроса и сохранять сущность через Repository .
+Используем: @ PostMapping , @ RequestBody
+Добавьте POST -метод с @ RequestBody Author . Сохраните через repository . save () и верните
+созданный объект с 200 OK .
+@PostMapping
+public ResponseEntity<Author> create(@RequestBody Author author) {
+return ResponseEntity.ok(repository.save(author));
+}
+Шаг 5. Составная модель ( DTO / проекция)
+Цель: вернуть данные из нескольких таблиц одним JSON -объектом.
+Используем: DTO-класс, Hibernate SQL query или JOIN FETCH
+Создайте класс AuthorBookDto (authorName, bookTitle, year). Реализуйте GET /api/author-
+books, возвращающий List<AuthorBookDto> из JOIN-запроса или native query с alias.
+public record AuthorBookDto(String authorName, String bookTitle, int year) {}
+@GetMapping(\\"/author-books\\")
+public List<AuthorBookDto> authorBooks() {
+return bookRepository.findAuthorBookProjection();
+}
+
+Шаг 6. Проверка REST и демо-клиент
+Цель: убедиться, что API работает, и показать результат пользователю.
+Используем: curl / Postman / HTML fetch()
+Проверьте эндпоинты curl -ом. Для демо-клиента достаточно HTML -страницы с
+fetch ('/ api / authors '), выводящей JSON в таблицу.
+curl http://localhost:8080/api/authors
+curl -X POST http://localhost:8080/api/authors
+-H \\"Content-Type: application/json\\"
+-d '{\\"name\\":\\"Новый автор\\"}'
+Часть 2. Транзакции (Л8)
+Шаг 7. Сервисный слой и @ Transactional
+Цель: вынести бизнес-логику из контроллера в сервис и обеспечить атомарность
+операций, затрагивающих несколько сущностей.
+Используем: @ Service , @ Transactional , propagation REQUIRED
+Создайте AuthorService с методом, выполняющим несколько изменений в БД (например,
+создать автора и несколько связанных книг). Пометьте метод @Transactional — при
+RuntimeException все изменения откатятся.
+@Service
+@RequiredArgsConstructor
+public class AuthorService {
+private final AuthorRepository authorRepo;
+private final BookRepository bookRepo;
+@Transactional
+public Author createAuthorWithBooks(Author author, List<Book> books) {
+Author saved = authorRepo.save(author);
+books.forEach(b -> { b.setAuthor(saved); bookRepo.save(b); });
+return saved;
+}
+}
+Шаг 8. Демонстрация rollback
+Цель: показать, что при ошибке внутри транзакции данные не сохраняются частично.
+Используем: @ Transactional , намеренное исключение, READ COMMITTED
+
+Вызовите сервисный метод, который после save () бросает RuntimeException . Проверьте в
+БД: ни автор, ни книги не должны сохраниться. Затем выполните тот же сценарий без
+ошибки — данные должны появиться.
+@Transactional
+public void transferDemo(Long fromId, Long toId, BigDecimal amount) {
+Account from = accountRepo.findById(fromId).orElseThrow();
+Account to = accountRepo.findById(toId).orElseThrow();
+from.debit(amount);
+to.credit(amount);
+// throw new RuntimeException(\\"test rollback\\");
+accountRepo.save(from);
+accountRepo.save(to);
+}
+Шаг 9. Настройка readOnly и обработка ошибок
+Цель: оптимизировать read -операции и корректно возвращать HTTP -статусы из REST .
+Используем: @Transactional(readOnly = true), ResponseEntity, @ExceptionHandler
+Для GET -методов сервиса используйте @ Transactional ( readOnly = true ). В контроллере
+обрабатывайте EntityNotFoundException → 404 Not Found . Задокументируйте в отчёте:
+какой уровень изоляции использует PostgreSQL по умолчанию.
+@Transactional(readOnly = true)
+public List<AuthorBookDto> getAuthorBooks() { ... }
+@ExceptionHandler(EntityNotFoundException.class)
+public ResponseEntity<Void> notFound() {
+return ResponseEntity.notFound().build();
+}
+C . Альтернативный стек (по согласованию с преподавателем)
+Допускается выполнение на другом стеке при сохранении результата из секции A .
+Компонент Возможные альтернативы
+REST ASP.NET Core Web API, FastAPI, NestJS
+Транзакции EF Core TransactionScope, SQLAlchemy session.commit/rollback
+Клиент HTML+JS, RestTemplate/WebClient
+Перед началом работы согласуйте выбранный стек с
+преподавателем.
+
+=== EXAM ===
+Серверное программирование . Вопросы к экзамену
+Cache Object Script:
+1. Классы: Соответствие ООП и SQL представления.
+2. Свойства: Типы данных, ограничения, дополнительные параметры.
+3. Свойства: Генерация данных, Population.
+4. Ссылочные свойства. Внешние ключи.
+5. Ссылочные свойства. Отношения «один ко многим» и «многие к одному».
+6. Ссылочные свойства. Отношения «один к одному» и «многие ко многим».
+7. Индексы, Типы индексов, Производительность запросов.
+8. SQL: виды join, различия. Неявный Join и стрелочный синтаксис.
+Java-Hibernate-Spring:
+1. Hibernate маппинг классов: Конфигурация hibernate, Базовые аннотации.
+2. Hibernate маппинг классов: Отношения «один ко многим» и «многие к одному», Типы
+Fetching.
+3. Hibernate: Роль интерфейса Session, Управление транзакциями.
+4. Hibernate: Различия между нативным SQL и HQL.
+5. Hibernate Criteria API: Синтаксис, Примеры запросов.
+6. Spring Boot: Преимущества использования, Конфигурация.
+7. Spring Boot Web: Аннотации и настройки REST контроллера.
+8. Сериализация, Использование JSON.

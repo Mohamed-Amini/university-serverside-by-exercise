@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 830"
+     width="1100" height="830" font-family="Segoe UI, Arial, sans-serif">
+  <style>
+    .bg    { fill: #ffffff; }
+    .box   { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.2; }
+    .head  { fill: #1e3a5f; }
+    .divider { stroke: #94a3b8; stroke-width: 1.2; }
+    .title { fill: #ffffff; font-size: 14px; font-weight: 700; }
+    .subtitle { fill: #cbd5e1; font-size: 11px; text-anchor: end; }
+    .col   { fill: #0f172a; font-size: 12px; font-family: Consolas, monospace; }
+    .col.key { font-weight: 700; }
+    .type  { fill: #64748b; font-size: 10.5px; text-anchor: end; font-family: Consolas, monospace; }
+    .badge { fill: #b45309; font-size: 9.5px; font-weight: 700; font-family: Consolas, monospace; }
+    .link  { fill: none; stroke: #475569; stroke-width: 1.4; }
+    .foot  { stroke: #475569; stroke-width: 1.4; fill: none; }
+    .caption { fill: #334155; font-size: 13px; }
+    .legend  { fill: #64748b; font-size: 11px; }
+  </style>
+  <rect width="1100" height="830" class="bg" />
+  <text x="40" y="34" class="caption">
+    ER-диаграмма БД «ВелоГрад» — 7 таблиц, сеть городского велопроката
+  </text>
+  <g class="rel"><title>station.district_id -&gt; district.id</title><polyline points="400,157 370,157 370,128.5 340,128.5" class="link" /><line x1="388" y1="157" x2="400" y2="157" class="foot" /><line x1="388" y1="157" x2="400" y2="151" class="foot" /><line x1="388" y1="157" x2="400" y2="163" class="foot" /><line x1="349" y1="122.5" x2="349" y2="134.5" class="foot" /></g>
+  <g class="rel"><title>bicycle.home_station_id -&gt; station.id</title><polyline points="760,157 730,157 730,157 700,157" class="link" /><line x1="748" y1="157" x2="760" y2="157" class="foot" /><line x1="748" y1="157" x2="760" y2="151" class="foot" /><line x1="748" y1="157" x2="760" y2="163" class="foot" /><line x1="709" y1="151" x2="709" y2="163" class="foot" /></g>
+  <g class="rel"><title>rental.end_station_id -&gt; station.id</title><polyline points="537,330 537,284 537,284 537,254" class="link" /><line x1="537" y1="318" x2="537" y2="330" class="foot" /><line x1="537" y1="318" x2="531" y2="330" class="foot" /><line x1="537" y1="318" x2="543" y2="330" class="foot" /><line x1="531" y1="263" x2="543" y2="263" class="foot" /></g>
+  <g class="rel"><title>rental.start_station_id -&gt; station.id</title><polyline points="563,330 563,300 563,300 563,254" class="link" /><line x1="563" y1="318" x2="563" y2="330" class="foot" /><line x1="563" y1="318" x2="557" y2="330" class="foot" /><line x1="563" y1="318" x2="569" y2="330" class="foot" /><line x1="557" y1="263" x2="569" y2="263" class="foot" /></g>
+  <g class="rel"><title>rental.tariff_id -&gt; tariff.id</title><polyline points="400,433 362,433 362,666.5 340,666.5" class="link" /><line x1="388" y1="433" x2="400" y2="433" class="foot" /><line x1="388" y1="433" x2="400" y2="427" class="foot" /><line x1="388" y1="433" x2="400" y2="439" class="foot" /><line x1="349" y1="660.5" x2="349" y2="672.5" class="foot" /></g>
+  <g class="rel"><title>rental.bicycle_id -&gt; bicycle.id</title><polyline points="700,446 730,446 730,157 760,157" class="link" /><line x1="712" y1="446" x2="700" y2="446" class="foot" /><line x1="712" y1="446" x2="700" y2="452" class="foot" /><line x1="712" y1="446" x2="700" y2="440" class="foot" /><line x1="751" y1="151" x2="751" y2="163" class="foot" /></g>
+  <g class="rel"><title>rental.client_id -&gt; client.id</title><polyline points="400,459 378,459 378,397 340,397" class="link" /><line x1="388" y1="459" x2="400" y2="459" class="foot" /><line x1="388" y1="459" x2="400" y2="453" class="foot" /><line x1="388" y1="459" x2="400" y2="465" class="foot" /><line x1="349" y1="391" x2="349" y2="403" class="foot" /></g>
+  <g class="rel"><title>payment.rental_id -&gt; rental.id</title><polyline points="760,417.5 730,417.5 730,446 700,446" class="link" /><line x1="748" y1="417.5" x2="760" y2="417.5" class="foot" /><line x1="748" y1="417.5" x2="760" y2="411.5" class="foot" /><line x1="748" y1="417.5" x2="760" y2="423.5" class="foot" /><line x1="709" y1="440" x2="709" y2="452" class="foot" /></g>
+  <g class="table">
+    <rect x="40" y="60" width="300" height="137" rx="8" class="box" />
+    <path d="M 40 94 H 340" class="divider" />
+    <rect x="40" y="60" width="300" height="34" rx="8" class="head" />
+    <text x="52" y="82" class="title">district</text>
+    <text x="328" y="82" class="subtitle">
+    Район</text>
+    <text x="52" y="107" class="badge">PK</text><text x="82" y="107" class="col key">id</text><text x="328" y="107" class="type">INTEGER</text>
+    <text x="52" y="126" class="badge"></text><text x="82" y="126" class="col">name</text><text x="328" y="126" class="type">TEXT</text>
+    <text x="52" y="145" class="badge"></text><text x="82" y="145" class="col">population</text><text x="328" y="145" class="type">INTEGER</text>
+    <text x="52" y="164" class="badge"></text><text x="82" y="164" class="col">area_km2</text><text x="328" y="164" class="type">REAL</text>
+    <text x="52" y="183" class="badge"></text><text x="82" y="183" class="col">is_central</text><text x="328" y="183" class="type">INTEGER</text>
+    </g>
+  <g class="table">
+    <rect x="400" y="60" width="300" height="194" rx="8" class="box" />
+    <path d="M 400 94 H 700" class="divider" />
+    <rect x="400" y="60" width="300" height="34" rx="8" class="head" />
+    <text x="412" y="82" class="title">station</text>
+    <text x="688" y="82" class="subtitle">
+    Станция</text>
+    <text x="412" y="107" class="badge">PK</text><text x="442" y="107" class="col key">id</text><text x="688" y="107" class="type">INTEGER</text>
+    <text x="412" y="126" class="badge">FK</text><text x="442" y="126" class="col">district_id</text><text x="688" y="126" class="type">INTEGER</text>
+    <text x="412" y="145" class="badge"></text><text x="442" y="145" class="col">name</text><text x="688" y="145" class="type">TEXT</text>
+    <text x="412" y="164" class="badge"></text><text x="442" y="164" class="col">address</text><text x="688" y="164" class="type">TEXT</text>
+    <text x="412" y="183" class="badge"></text><text x="442" y="183" class="col">capacity</text><text x="688" y="183" class="type">INTEGER</text>
+    <text x="412" y="202" class="badge"></text><text x="442" y="202" class="col">latitude</text><text x="688" y="202" class="type">REAL</text>
+    <text x="412" y="221" class="badge"></text><text x="442" y="221" class="col">longitude</text><text x="688" y="221" class="type">REAL</text>
+    <text x="412" y="240" class="badge"></text><text x="442" y="240" class="col">opened_on</text><text x="688" y="240" class="type">TEXT</text>
+    </g>
+  <g class="table">
+    <rect x="760" y="60" width="300" height="194" rx="8" class="box" />
+    <path d="M 760 94 H 1060" class="divider" />
+    <rect x="760" y="60" width="300" height="34" rx="8" class="head" />
+    <text x="772" y="82" class="title">bicycle</text>
+    <text x="1048" y="82" class="subtitle">
+    Велосипед</text>
+    <text x="772" y="107" class="badge">PK</text><text x="802" y="107" class="col key">id</text><text x="1048" y="107" class="type">INTEGER</text>
+    <text x="772" y="126" class="badge"></text><text x="802" y="126" class="col">serial_number</text><text x="1048" y="126" class="type">TEXT</text>
+    <text x="772" y="145" class="badge"></text><text x="802" y="145" class="col">model</text><text x="1048" y="145" class="type">TEXT</text>
+    <text x="772" y="164" class="badge"></text><text x="802" y="164" class="col">kind</text><text x="1048" y="164" class="type">TEXT</text>
+    <text x="772" y="183" class="badge">FK</text><text x="802" y="183" class="col">home_station_id</text><text x="1048" y="183" class="type">INTEGER</text>
+    <text x="772" y="202" class="badge"></text><text x="802" y="202" class="col">purchased_on</text><text x="1048" y="202" class="type">TEXT</text>
+    <text x="772" y="221" class="badge"></text><text x="802" y="221" class="col">odometer_km</text><text x="1048" y="221" class="type">REAL</text>
+    <text x="772" y="240" class="badge"></text><text x="802" y="240" class="col">status</text><text x="1048" y="240" class="type">TEXT</text>
+    </g>
+  <g class="table">
+    <rect x="40" y="300" width="300" height="194" rx="8" class="box" />
+    <path d="M 40 334 H 340" class="divider" />
+    <rect x="40" y="300" width="300" height="34" rx="8" class="head" />
+    <text x="52" y="322" class="title">client</text>
+    <text x="328" y="322" class="subtitle">
+    Клиент</text>
+    <text x="52" y="347" class="badge">PK</text><text x="82" y="347" class="col key">id</text><text x="328" y="347" class="type">INTEGER</text>
+    <text x="52" y="366" class="badge"></text><text x="82" y="366" class="col">last_name</text><text x="328" y="366" class="type">TEXT</text>
+    <text x="52" y="385" class="badge"></text><text x="82" y="385" class="col">first_name</text><text x="328" y="385" class="type">TEXT</text>
+    <text x="52" y="404" class="badge"></text><text x="82" y="404" class="col">phone</text><text x="328" y="404" class="type">TEXT</text>
+    <text x="52" y="423" class="badge"></text><text x="82" y="423" class="col">email?</text><text x="328" y="423" class="type">TEXT</text>
+    <text x="52" y="442" class="badge"></text><text x="82" y="442" class="col">birth_date</text><text x="328" y="442" class="type">TEXT</text>
+    <text x="52" y="461" class="badge"></text><text x="82" y="461" class="col">registered_at</text><text x="328" y="461" class="type">TEXT</text>
+    <text x="52" y="480" class="badge"></text><text x="82" y="480" class="col">is_blocked</text><text x="328" y="480" class="type">INTEGER</text>
+    </g>
+  <g class="table">
+    <rect x="40" y="560" width="300" height="213" rx="8" class="box" />
+    <path d="M 40 594 H 340" class="divider" />
+    <rect x="40" y="560" width="300" height="34" rx="8" class="head" />
+    <text x="52" y="582" class="title">tariff</text>
+    <text x="328" y="582" class="subtitle">
+    Тариф</text>
+    <text x="52" y="607" class="badge">PK</text><text x="82" y="607" class="col key">id</text><text x="328" y="607" class="type">INTEGER</text>
+    <text x="52" y="626" class="badge"></text><text x="82" y="626" class="col">code</text><text x="328" y="626" class="type">TEXT</text>
+    <text x="52" y="645" class="badge"></text><text x="82" y="645" class="col">name</text><text x="328" y="645" class="type">TEXT</text>
+    <text x="52" y="664" class="badge"></text><text x="82" y="664" class="col">unlock_price</text><text x="328" y="664" class="type">NUMERIC</text>
+    <text x="52" y="683" class="badge"></text><text x="82" y="683" class="col">price_per_minute</text><text x="328" y="683" class="type">NUMERIC</text>
+    <text x="52" y="702" class="badge"></text><text x="82" y="702" class="col">free_minutes</text><text x="328" y="702" class="type">INTEGER</text>
+    <text x="52" y="721" class="badge"></text><text x="82" y="721" class="col">is_subscription</text><text x="328" y="721" class="type">INTEGER</text>
+    <text x="52" y="740" class="badge"></text><text x="82" y="740" class="col">valid_from</text><text x="328" y="740" class="type">TEXT</text>
+    <text x="52" y="759" class="badge"></text><text x="82" y="759" class="col">valid_to?</text><text x="328" y="759" class="type">TEXT</text>
+    </g>
+  <g class="table">
+    <rect x="400" y="330" width="300" height="232" rx="8" class="box" />
+    <path d="M 400 364 H 700" class="divider" />
+    <rect x="400" y="330" width="300" height="34" rx="8" class="head" />
+    <text x="412" y="352" class="title">rental</text>
+    <text x="688" y="352" class="subtitle">
+    Поездка</text>
+    <text x="412" y="377" class="badge">PK</text><text x="442" y="377" class="col key">id</text><text x="688" y="377" class="type">INTEGER</text>
+    <text x="412" y="396" class="badge">FK</text><text x="442" y="396" class="col">client_id</text><text x="688" y="396" class="type">INTEGER</text>
+    <text x="412" y="415" class="badge">FK</text><text x="442" y="415" class="col">bicycle_id</text><text x="688" y="415" class="type">INTEGER</text>
+    <text x="412" y="434" class="badge">FK</text><text x="442" y="434" class="col">tariff_id</text><text x="688" y="434" class="type">INTEGER</text>
+    <text x="412" y="453" class="badge">FK</text><text x="442" y="453" class="col">start_station_id</text><text x="688" y="453" class="type">INTEGER</text>
+    <text x="412" y="472" class="badge">FK</text><text x="442" y="472" class="col">end_station_id?</text><text x="688" y="472" class="type">INTEGER</text>
+    <text x="412" y="491" class="badge"></text><text x="442" y="491" class="col">started_at</text><text x="688" y="491" class="type">TEXT</text>
+    <text x="412" y="510" class="badge"></text><text x="442" y="510" class="col">finished_at?</text><text x="688" y="510" class="type">TEXT</text>
+    <text x="412" y="529" class="badge"></text><text x="442" y="529" class="col">distance_km?</text><text x="688" y="529" class="type">REAL</text>
+    <text x="412" y="548" class="badge"></text><text x="442" y="548" class="col">total_cost?</text><text x="688" y="548" class="type">NUMERIC</text>
+    </g>
+  <g class="table">
+    <rect x="760" y="330" width="300" height="175" rx="8" class="box" />
+    <path d="M 760 364 H 1060" class="divider" />
+    <rect x="760" y="330" width="300" height="34" rx="8" class="head" />
+    <text x="772" y="352" class="title">payment</text>
+    <text x="1048" y="352" class="subtitle">
+    Платёж</text>
+    <text x="772" y="377" class="badge">PK</text><text x="802" y="377" class="col key">id</text><text x="1048" y="377" class="type">INTEGER</text>
+    <text x="772" y="396" class="badge">FK</text><text x="802" y="396" class="col">rental_id</text><text x="1048" y="396" class="type">INTEGER</text>
+    <text x="772" y="415" class="badge"></text><text x="802" y="415" class="col">amount</text><text x="1048" y="415" class="type">NUMERIC</text>
+    <text x="772" y="434" class="badge"></text><text x="802" y="434" class="col">method</text><text x="1048" y="434" class="type">TEXT</text>
+    <text x="772" y="453" class="badge"></text><text x="802" y="453" class="col">status</text><text x="1048" y="453" class="type">TEXT</text>
+    <text x="772" y="472" class="badge"></text><text x="802" y="472" class="col">paid_at</text><text x="1048" y="472" class="type">TEXT</text>
+    <text x="772" y="491" class="badge"></text><text x="802" y="491" class="col">external_id</text><text x="1048" y="491" class="type">TEXT</text>
+    </g>
+  <text x="40" y="808" class="legend">
+    PK — первичный ключ, FK — внешний ключ, «?» после имени — столбец допускает NULL.
+    Связь: «один» (штрих) — «многие» (лапка).
+  </text>
+</svg>

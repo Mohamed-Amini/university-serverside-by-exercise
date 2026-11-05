@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Станции</title>
+</head>
+<body>
+<table border="1">
+<thead><tr><th>ID</th><th>Название</th><th>Адрес</th><th>Мест</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+<script>
+fetch('/api/stations')
+    .then((response) => response.json())
+    .then((stations) => {
+        document.getElementById('rows').innerHTML = stations
+            .map((s) => `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.address}</td><td>${s.capacity}</td></tr>`)
+            .join('');
+    });
+</script>
+</body>
+</html>
